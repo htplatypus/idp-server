@@ -5,41 +5,48 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtUtil {
 
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final String SECRET_KEY = "my-secret-key-for-jwt-signing-and-validation";
+    private final SecretKey key = new SecretKeySpec(SECRET_KEY.getBytes(StandardCharsets.UTF_8), "HmacSHA256"); // Use the same secret as the IdP
+
+
 
     public String generateToken(Authentication authentication) {
+
+        // extract user details from the Authentication object
+        String username = authentication.getName(); // Get the authenticated username
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal(); // Cast to UserDetails
+        String roles = userDetails.getAuthorities().stream()
+                .map(authority -> authority.getAuthority())
+                .collect(Collectors.joining(",")); // Join roles with commas
+
         return Jwts.builder()
-                .setSubject(authentication.getName())
-                .setIssuedAt(new Date())
+                .subject(authentication.getName())
+                .issuedAt(new Date())
                 .claim("email", "user@example.com") // TODO: IMPLEMENT
-                .claim("role", "ROLE_USER")
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
+                .claim("roles", roles)
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
                 .signWith(key)
                 .compact();
     }
 
-    public String validateToken(String token) {
-        return Jwts.parser()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
-    }
-
     public Claims getClaims(String token) {
         return Jwts.parser()
-                .setSigningKey(key)
+                .verifyWith(key)
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }

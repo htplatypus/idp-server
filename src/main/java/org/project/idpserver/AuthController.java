@@ -23,6 +23,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @CrossOrigin("http://localhost:8081")
     public String login(@RequestBody LoginRequest loginRequest) {
         try {
             Authentication authenticate = authenticationManager.authenticate(
@@ -35,6 +36,7 @@ public class AuthController {
     }
 
     @GetMapping("/userinfo")
+    @CrossOrigin("http://localhost:8081")
     public Map<String, Object> getUserInfo(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
 
@@ -43,7 +45,6 @@ public class AuthController {
         }
 
         String token = authHeader.substring(7);
-        String username = jwtUtil.validateToken(token);
         Claims claims = jwtUtil.getClaims(token);
 
         return Map.of(
