@@ -1,7 +1,9 @@
 package org.project.idpserver;
 
 import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,17 +24,29 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
     }
 
+
     @PostMapping("/login")
     @CrossOrigin("http://localhost:8081")
-    public String login(@RequestBody LoginRequest loginRequest) {
-        try {
-            Authentication authenticate = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
-            );
-            return jwtUtil.generateToken(authenticate);
-        } catch (AuthenticationException e) {
-            throw new RuntimeException("Invalid username or password");
-        }
+    public void handleLogin(@RequestParam String username, @RequestParam String password, @RequestParam("redirect_uri") String redirectUri,  HttpServletResponse response) {
+        // Authenticate user
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(username, password)
+        );
+
+        // generate JWT
+        String jwt = jwtUtil.generateToken(authentication);
+
+        // Set JWT as a secure cookie
+        Cookie cookie = new Cookie("jwt", jwt);
+        cookie.setHttpOnly(true);
+        //cookie.setSecure(true); // only for HTTPS
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 60 * 24); // 1 day
+        response.addCookie(cookie);
+
+        // Redirect to the client
+        response.setStatus(HttpServletResponse.SC_FOUND);
+        response.setHeader("Location", redirectUri);
     }
 
     @GetMapping("/userinfo")
