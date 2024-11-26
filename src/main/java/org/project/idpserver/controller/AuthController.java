@@ -1,13 +1,13 @@
-package org.project.idpserver;
+package org.project.idpserver.controller;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.project.idpserver.utility.JwtUtil;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -39,7 +39,7 @@ public class AuthController {
         // Set JWT as a secure cookie
         Cookie cookie = new Cookie("jwt", jwt);
         cookie.setHttpOnly(true);
-        //cookie.setSecure(true); // only for HTTPS
+        //cookie.setSecure(true); // only for HTTPS ?
         cookie.setPath("/");
         cookie.setMaxAge(60 * 60 * 24); // 1 day
         response.addCookie(cookie);

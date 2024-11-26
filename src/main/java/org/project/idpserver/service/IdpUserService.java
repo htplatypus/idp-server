@@ -1,5 +1,7 @@
-package org.project.idpserver;
+package org.project.idpserver.service;
 
+import org.project.idpserver.entity.IdpUser;
+import org.project.idpserver.repository.IdpUserRepository;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -8,31 +10,31 @@ import java.util.Optional;
 
 // implement UserDetailsService to bridge custom user db with spring security
 @Service
-public class UserService implements UserDetailsService {
+public class IdpUserService implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final IdpUserRepository idpUserRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
+    public IdpUserService(IdpUserRepository idpUserRepository, PasswordEncoder passwordEncoder) {
+        this.idpUserRepository = idpUserRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     public IdpUser saveUser(String username, String password, String role, String email) {
         IdpUser user = new IdpUser(username, passwordEncoder.encode(password), role, email);
-        return userRepository.save(user);
+        return idpUserRepository.save(user);
     }
 
     public Optional<IdpUser> findByUsername(String username) {
-        return Optional.ofNullable(userRepository.findByUsername(username));
+        return Optional.ofNullable(idpUserRepository.findByUsername(username));
     }
 
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+        idpUserRepository.deleteById(id);
     }
 
     public Iterable<IdpUser> getAllUsers() {
-        return userRepository.findAll();
+        return idpUserRepository.findAll();
     }
 
     // SPRING SECURITY
@@ -40,7 +42,7 @@ public class UserService implements UserDetailsService {
     @Override
     // implement UserDetailsService method to load user by username
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        IdpUser user = userRepository.findByUsername(username);
+        IdpUser user = idpUserRepository.findByUsername(username);
 
         if (user == null) {
             throw new UsernameNotFoundException("User not found: " + username);

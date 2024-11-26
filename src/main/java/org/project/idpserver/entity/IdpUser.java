@@ -1,4 +1,4 @@
-package org.project.idpserver;
+package org.project.idpserver.entity;
 
 import jakarta.persistence.*;
 
