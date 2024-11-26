@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.project.idpserver.annotation.Auditable;
 import org.project.idpserver.utility.JwtUtil;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,6 +28,7 @@ public class AuthController {
 
     @PostMapping("/login")
     @CrossOrigin("http://localhost:8081")
+    @Auditable(action = "LOGIN")
     public void handleLogin(@RequestParam String username, @RequestParam String password, @RequestParam("redirect_uri") String redirectUri,  HttpServletResponse response) {
         // Authenticate user
         Authentication authentication = authenticationManager.authenticate(
@@ -51,6 +53,7 @@ public class AuthController {
 
     @GetMapping("/userinfo")
     @CrossOrigin("http://localhost:8081")
+    @Auditable(action = "GET_USER_INFO")
     public Map<String, Object> getUserInfo(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
 

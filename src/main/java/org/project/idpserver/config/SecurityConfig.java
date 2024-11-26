@@ -27,6 +27,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/login").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/metrics").permitAll()
                         .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/api/auth/userinfo").permitAll()
                         .anyRequest().authenticated()
