@@ -18,8 +18,8 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public IdpUser saveUser(String username, String password, String role) {
-        IdpUser user = new IdpUser(username, passwordEncoder.encode(password), role);
+    public IdpUser saveUser(String username, String password, String role, String email) {
+        IdpUser user = new IdpUser(username, passwordEncoder.encode(password), role, email);
         return userRepository.save(user);
     }
 

@@ -10,8 +10,8 @@ public class DbInit {
     @Bean
     CommandLineRunner initDatabase(UserService userService) {
         return args -> {
-            userService.saveUser("admin", "password", "ADMIN");
-            userService.saveUser("user", "password", "USER");
+            userService.saveUser("admin", "password", "ADMIN", "admin@example.com");
+            userService.saveUser("user", "password", "USER", "user@example.com");
         };
     }
 }

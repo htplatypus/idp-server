@@ -17,13 +17,17 @@ public class IdpUser {
     @Column(nullable = false)
     private String role;
 
+    @Column(nullable=false, unique=true)
+    private String email;
+
     public IdpUser() {
     }
 
-    public IdpUser(String username, String password, String role) {
+    public IdpUser(String username, String password, String role, String email) {
         this.username = username;
         this.password = password;
         this.role = role;
+        this.email = email;
     }
 
     public Long getId() {
@@ -56,5 +60,13 @@ public class IdpUser {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

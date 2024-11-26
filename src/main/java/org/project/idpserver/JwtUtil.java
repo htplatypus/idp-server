@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -11,15 +12,59 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.Key;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 import java.util.Date;
 import java.util.stream.Collectors;
 
 @Component
 public class JwtUtil {
 
-    private final String SECRET_KEY = "my-secret-key-for-jwt-signing-and-validation";
-    private final SecretKey key = new SecretKeySpec(SECRET_KEY.getBytes(StandardCharsets.UTF_8), "HmacSHA256"); // Use the same secret as the IdP
+    private final PrivateKey privateKey;
+    private final PublicKey publicKey;
+
+    //constructor params
+    public JwtUtil(
+            @Value("${jwt.private-key}") String privateKeyPath,
+            @Value("${jwt.public-key}") String publicKeyPath) throws Exception {
+        this.privateKey = loadPrivateKey(privateKeyPath);
+        this.publicKey = loadPublicKey(publicKeyPath);
+    }
+
+
+
+    private PrivateKey loadPrivateKey(String privateKeyPath) throws Exception {
+        String privateKeyPEM = new String(Files.readAllBytes(Paths.get(privateKeyPath)))
+                .replace("-----BEGIN PRIVATE KEY-----", "")
+                .replace("-----END PRIVATE KEY-----", "")
+                .replaceAll("\\s+", ""); // Remove all whitespace
+
+        byte[] decoded = Base64.getDecoder().decode(privateKeyPEM);
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decoded);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePrivate(keySpec);
+    }
+
+    private PublicKey loadPublicKey(String publicKeyPath) throws Exception {
+        String publicKeyPEM = new String(Files.readAllBytes(Paths.get(publicKeyPath)))
+                .replace("-----BEGIN PUBLIC KEY-----", "")
+                .replace("-----END PUBLIC KEY-----", "")
+                .replaceAll("\\s+", "");
+
+        byte[] decoded = Base64.getDecoder().decode(publicKeyPEM);
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decoded);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePublic(keySpec);
+    }
+
+
 
 
 
@@ -30,7 +75,7 @@ public class JwtUtil {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal(); // Cast to UserDetails
         String roles = userDetails.getAuthorities().stream()
                 .map(authority -> authority.getAuthority())
-                .collect(Collectors.joining(",")); // Join roles with commas
+                .collect(Collectors.joining(","));
 
         return Jwts.builder()
                 .subject(authentication.getName())
@@ -38,13 +83,13 @@ public class JwtUtil {
                 .claim("email", "user@example.com") // TODO: IMPLEMENT
                 .claim("roles", roles)
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
-                .signWith(key)
+                .signWith(privateKey, Jwts.SIG.RS256)
                 .compact();
     }
 
     public Claims getClaims(String token) {
         return Jwts.parser()
-                .verifyWith(key)
+                .verifyWith(publicKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
