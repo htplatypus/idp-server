@@ -6,6 +6,13 @@
 </head>
 <body>
 <div class="container">
+
+
+    <div th:if="${error}" class="error">
+        <p th:text="${error}"></p>
+    </div>
+
+
     <h1>Login</h1>
     <form th:action="@{/api/auth/login}" method="post">
         <input type="hidden" name="redirect_uri" th:value="${redirectUri}" />

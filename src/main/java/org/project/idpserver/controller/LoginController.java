@@ -17,7 +17,11 @@ public class LoginController {
     @GetMapping("/login")
     @CrossOrigin("http://localhost:8081")
     @Auditable(action = "SERVE_LOGIN_PAGE")
-    public String login(Model model, @RequestParam(value = "redirect_uri") String redirectUri) {
+    public String login(Model model, @RequestParam(value = "redirect_uri") String redirectUri, String error) {
+
+        if (error != null) {
+            model.addAttribute("error", "Invalid username or password");
+        }
 
         model.addAttribute("redirectUri", redirectUri);
         return "login";

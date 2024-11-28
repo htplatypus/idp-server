@@ -1,7 +1,7 @@
 package org.project.idpserver.service;
 
 import org.project.idpserver.entity.Audit;
-import org.project.idpserver.entity.AuditRepository;
+import org.project.idpserver.repository.AuditRepository;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;

@@ -12,7 +12,7 @@ public class Audit {
     private Long id;
 
     @Column(name = "event_type", nullable = false)
-    private String eventType; // LOGIN, LOGOUT, FAILED_LOGIN
+    private String eventType; // LOGIN, LOGOUT
 
     @Column(name = "timestamp", nullable = false)
     private LocalDateTime timestamp;
@@ -29,8 +29,8 @@ public class Audit {
     @Column(name = "success", nullable = false)
     private boolean success;
 
-    @Column(name = "reason", nullable = true)
-    private String reason; // e.g., Invalid credentials or session timeout
+    @Column(name = "reason", nullable = true, length = 1000)
+    private String reason;
 
     // Getters and Setters
     public Long getId() {
